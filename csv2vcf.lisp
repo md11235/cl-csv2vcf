@@ -223,6 +223,7 @@
     (with-open-file (output output-filepath
                             :direction :output
                             :external-format :utf-8
+                            :if-exists :overwrite
                             )
       (let ((records (parse-csv-file->alists '(full-name mobile work-address)
                                              csv-filepath
