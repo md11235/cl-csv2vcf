@@ -90,14 +90,6 @@
 (defun get-vcf-field-value (field alist)
   (cdr (assoc field alist)))
 
-(defun use-manual-value (c)
-  (let ((family-name (read-line))
-        (given-name (read-line))
-        (pinyin (read-line)))
-    (invoke-restart 'use-manual-value
-                    family-name
-                    given-name
-                    pinyin)))
 
 (defun collect-xing-pinyin-pairs ()
   (let ((existing-pairs '()))
@@ -158,10 +150,11 @@
                                    :hanzi (list family-name-1 family-name-2))))
                     (format out-stream "~%X-PHONETIC-LAST-NAME:~A" (string-upcase (or pinyin-2 pinyin-1))))
                 (use-manual-value (family-name given-name pinyin)
+                  :interactive read-manual-value
                   (format out-stream
-                          "~%N;CHARSET=UTF-8:~A;~A;;;"
-                          family-name
-                          given-name)
+                            "~%N;CHARSET=UTF-8:~A;~A;;;"
+                            family-name
+                            given-name)
                   (format out-stream "~%X-PHONETIC-LAST-NAME:~A" (string-upcase pinyin))
                   (add-xing-pinyin-pair family-name pinyin)))
               
@@ -199,6 +192,18 @@
     (if note
         (format out-stream "~%NOTE;CHARSET=UTF-8:~A" note)))
   (format out-stream "~%END:VCARD~%~%"))
+
+(defun read-manual-value ()
+  (let (family-name given-name pinyin)
+    (format t "Input Family Name:")
+    (setq family-name (read-line))
+    (format t "Input Given Name:")
+    (setq given-name (read-line))
+    (format t "Input Pinyin for Family Name:")
+    (setq pinyin (read-line))
+    (list family-name
+          given-name
+          pinyin)))
 
 ;; the driver function
 ;; take /path/to/contacts.csv and output /path/to/contacts.vcf
