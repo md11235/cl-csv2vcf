@@ -105,23 +105,25 @@
                  (push (cons key value)
                        existing-pairs))
              *hash-xing->pinyin*)
-    existing-pairs))
+    (reverse existing-pairs)))
 
 (defun add-xing-pinyin-pair (xing pinyin)
-  (if (null (assoc (intern xing) existing-pairs))
+  (if (null (assoc (intern xing) (collect-xing-pinyin-pairs)))
       (setf (gethash (intern xing)
                      *hash-xing->pinyin*)
             pinyin)))
 
 (defun dump-xing-pinyin-pairs ()
-  (with-open-file (dumped-file #p"e:/tmp/dumped-pairs.txt"
+  (with-open-file (dumped-file *hanzi->pinyin-alist-filepath*
                                :direction :output
-                               :external-format :utf-8)
-    (format dumped-file "~A~%" "(")
-    (loop for pair in (collect-xing-pinyin-pairs)
-       do (format dumped-file "(\"~A\" . \"~A\")~%" (car pair) (cdr pair)))
-    (format dumped-file "~A~%" ")")
-    (length pairs)))
+                               :external-format :utf-8
+                               :if-exists :overwrite)
+    (let ((pairs (collect-xing-pinyin-pairs)))
+      (format dumped-file "~A~%" "(")
+      (loop for pair in pairs
+         do (format dumped-file "(\"~A\" . \"~A\")~%" (car pair) (cdr pair)))
+      (format dumped-file "~A~%" ")")
+      (length pairs))))
 
 ;; todo: move the xing->pinyin into parse-csv-line->alist
 ;; to separate logic from presentation.
