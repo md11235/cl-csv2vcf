@@ -12,14 +12,14 @@
 (define-condition unsupported-field (error)
   ((name :initarg :name :reader name)))
 
-(defconstant +supported-vcard-fields+ '(full-name
-                                        org
-                                        mobile
-                                        work-fixed-line
-                                        email
-                                        work-address
-                                        home-address
-                                        note))
+(defvar *supported-vcard-fields* '(full-name
+                                   org
+                                   mobile
+                                   work-fixed-line
+                                   email
+                                   work-address
+                                   home-address
+                                   note))
 
 (defvar *hanzi->pinyin-alist-filename* nil "Chinese family name to pinyin mapping file")
 (setq *hanzi->pinyin-alist-filename* "family-name-pinyin")
@@ -51,7 +51,7 @@
   (let ((result (list (cons 'org org)
                       (cons 'note note))))
     (mapcar #'(lambda (field value)
-                (or (member field +supported-vcard-fields+)
+                (or (member field *supported-vcard-fields*)
                     (error 'unsupported-field
                            :name field))
                 (if (> (length value) 0)
