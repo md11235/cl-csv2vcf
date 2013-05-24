@@ -27,3 +27,15 @@ Convert CSV to VCF
     (csv2vcf:csv->vcf '(full-name mobile email work-address) "e:/tmp/test.csv")
 
 + the output VCF is under the same directory with the CSV file.
+
++ supported fields
+
+>supported fileds:
+>full-name
+>org
+>mobile
+>work-fixed-line
+>email
+>work-address
+>home-address
+>note
