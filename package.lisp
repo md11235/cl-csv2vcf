@@ -1,5 +1,7 @@
 ;;;; package.lisp
 
 (defpackage #:csv2vcf
-  (:use #:cl))
+  (:use #:cl)
+  (:export
+   #:csv->vcf))
 
