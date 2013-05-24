@@ -126,8 +126,7 @@
       (format dumped-file "~A~%" "(")
       (loop for pair in pairs
          do (format dumped-file "(\"~A\" . \"~A\")~%" (car pair) (cdr pair)))
-      (format dumped-file "~A~%" ")")
-      (length pairs))))
+      (format dumped-file "~A~%" ")"))))
 
 ;; todo: move the xing->pinyin into parse-csv-line->alist
 ;; to separate logic from presentation.
