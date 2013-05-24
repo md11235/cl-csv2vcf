@@ -237,11 +237,17 @@
                             :if-exists :overwrite
                             :if-does-not-exist :create
                             )
-      (let ((records (parse-csv-file->alists fields
-                                             csv-filepath
-                                             nil
-                                             :note note
-                                             :org org)))
+      (let ((records (handler-bind ((unsupported-field-error
+                                     #'(lambda (c)
+                                         (format t
+                                                 "Abort upon a unsupported field: ~A~%"
+                                                 (unsupported-field-error-name c))
+                                         (invoke-restart 'abort))))
+                       (parse-csv-file->alists fields
+                                               csv-filepath
+                                               nil
+                                               :note note
+                                               :org org))))
         (loop for alist in records
            do (alist->vcf3.0-format alist output)))))
   (dump-xing-pinyin-pairs))
