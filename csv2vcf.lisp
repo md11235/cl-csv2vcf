@@ -6,11 +6,22 @@
 
 ;; "xing" is the PRC pinyin of the Hanzi for "family name".
 
-(define-condition could-not-find-pinyin-of-hanzi (error)
-  ((hanzi :initarg :hanzi :reader hanzi)))
+(define-condition no-pinyin-for-hanzi-error (error)
+  ((hanzi :initarg :hanzi :reader no-pinyin-for-hanzi-error-hanzi)))
 
-(define-condition unsupported-field (error)
-  ((name :initarg :name :reader name)))
+(defmethod print-object ((object no-pinyin-for-hanzi-error) stream)
+  (print-unreadable-object (object stream :type t :identity t)
+    (format stream "Could not find pinyin for hanzi: ~A~%"
+            (no-pinyin-for-hanzi-error-hanzi object))))
+
+(define-condition unsupported-field-error (error)
+  ((name
+    :initarg :name :reader unsupported-field-error-name)))
+
+(defmethod print-object ((object unsupported-field-error) stream)
+  (print-unreadable-object (object stream :type t :identity t)
+    (format stream "Unsupported fields name: ~A~%"
+            (unsupported-field-error-name object))))
 
 (defvar *supported-vcard-fields* '(full-name
                                    org
@@ -50,7 +61,7 @@
                       (cons 'note note))))
     (mapcar #'(lambda (field value)
                 (or (member field *supported-vcard-fields*)
-                    (error 'unsupported-field
+                    (error 'unsupported-field-error
                            :name field))
                 (if (> (length value) 0)
                     (case field
@@ -146,7 +157,7 @@
                                     "~%N;CHARSET=UTF-8:~A;~A;;;"
                                     family-name-1
                                     (subseq full-name 1))
-                            (error 'could-not-find-pinyin-of-hanzi
+                            (error 'no-pinyin-for-hanzi-error
                                    :hanzi (list family-name-1 family-name-2))))
                     (format out-stream "~%X-PHONETIC-LAST-NAME:~A" (string-upcase (or pinyin-2 pinyin-1))))
                 (use-manual-value (family-name given-name pinyin)
