@@ -60,6 +60,7 @@
   (let ((result (list (cons 'org org)
                       (cons 'note note))))
     (mapcar #'(lambda (field value)
+                (setq field (intern (symbol-name field) :csv2vcf))
                 (or (member field *supported-vcard-fields*)
                     (error 'unsupported-field-error
                            :name field))
@@ -227,7 +228,7 @@
 ;; work-address
 ;; home-address
 ;; note
-(defun csv->vcf (csv-filepath &key note org)
+(defun csv->vcf (fields csv-filepath &key note org)
   (load-xing-pinyin-pairs)
   (let ((output-filepath (make-pathname :type "vcf"
                                         :defaults csv-filepath)))
@@ -237,7 +238,7 @@
                             :if-exists :overwrite
                             :if-does-not-exist :create
                             )
-      (let ((records (parse-csv-file->alists '(full-name mobile work-address)
+      (let ((records (parse-csv-file->alists fields
                                              csv-filepath
                                              nil
                                              :note note
