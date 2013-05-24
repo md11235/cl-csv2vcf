@@ -22,17 +22,15 @@
                                    note))
 
 (defvar *hanzi->pinyin-alist-filename* nil "Chinese family name to pinyin mapping file")
-(setq *hanzi->pinyin-alist-filename* "family-name-pinyin")
-
-(defvar *hanzi->pinyin-alist-filepath* nil)
-(setq *hanzi->pinyin-alist-filepath*
-      #P"c:/Users/zhang/AppData/Roaming/quicklisp/local-projects/csv2vcf/family-name-pinyin.txt")
+(setq *hanzi->pinyin-alist-filename* "family-name-pinyin.txt")
 
 (defvar *hash-xing->pinyin* nil "Chinese family name to pinyin mapping hash")
 
 (defun load-xing-pinyin-pairs ()
   (setq *hash-xing->pinyin*
-        (with-open-file (in *hanzi->pinyin-alist-filepath*
+        (with-open-file (in (asdf:system-relative-pathname
+                             'csv2vcf
+                             *hanzi->pinyin-alist-filename*)
                             :direction :input
                             :external-format :utf-8)
           (let ((hash-xing->pinyin (make-hash-table))
@@ -106,7 +104,9 @@
             pinyin)))
 
 (defun dump-xing-pinyin-pairs ()
-  (with-open-file (dumped-file *hanzi->pinyin-alist-filepath*
+  (with-open-file (dumped-file (asdf:system-relative-pathname
+                                'csv2vcf
+                                *hanzi->pinyin-alist-filename*)
                                :direction :output
                                :external-format :utf-8
                                :if-exists :overwrite)
