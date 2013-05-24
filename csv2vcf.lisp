@@ -34,12 +34,12 @@
                             :direction :input
                             :external-format :utf-8)
           (let ((hash-xing->pinyin (make-hash-table))
-                (alist-xing->pinyin (read in nil)))
+                (xing->pinyin-alist (read in nil)))
             (mapcar #'(lambda (pair)
                         (setf (gethash (intern (car pair))
                                        hash-xing->pinyin)
                               (cdr pair)))
-                    alist-xing->pinyin)
+                    xing->pinyin-alist)
             hash-xing->pinyin))))
 
 (defun xing->pinyin (hanzi)
