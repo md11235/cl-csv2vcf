@@ -30,12 +30,12 @@ Convert CSV to VCF
 
 + supported fields
 
->supported fileds:
->full-name
->org
->mobile
->work-fixed-line
->email
->work-address
->home-address
->note
+    * supported fileds:
+    * full-name
+    * org
+    * mobile
+    * work-fixed-line
+    * email
+    * work-address
+    * home-address
+    * note
