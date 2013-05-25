@@ -216,6 +216,21 @@
           given-name
           pinyin)))
 
+;;
+
+(defun use-manual-value (c)
+    (declare (ignore c))
+    (let (family-name
+          given-name
+          pinyin)
+      (format t "Input Family Name:")
+      (setq family-name (read-line))
+      (format t "Input Given Name:")
+      (setq given-name (read-line))
+      (format t "Input Pinyin for Family Name:")
+      (setq pinyin (read-line))
+      (invoke-restart 'use-manual-value family-name given-name pinyin)))
+
 ;; the driver function
 ;; take /path/to/contacts.csv and output /path/to/contacts.vcf
 ;; supported fileds:
@@ -249,5 +264,7 @@
                                                :note note
                                                :org org))))
         (loop for alist in records
-           do (alist->vcf3.0-format alist output)))))
+           do (handler-bind ((no-pinyin-for-hanzi-error
+                              #'use-manual-value))
+                (alist->vcf3.0-format alist output))))))
   (dump-xing-pinyin-pairs))
