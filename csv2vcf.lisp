@@ -252,17 +252,21 @@
                             :if-exists :overwrite
                             :if-does-not-exist :create
                             )
-      (let ((records (handler-bind ((unsupported-field-error
-                                     #'(lambda (c)
-                                         (format t
-                                                 "Abort upon a unsupported field: ~A~%"
-                                                 (unsupported-field-error-name c))
-                                         (invoke-restart 'abort))))
-                       (parse-csv-file->alists fields
-                                               csv-filepath
-                                               nil
-                                               :note note
-                                               :org org))))
+      (let ((records (restart-case
+                         (parse-csv-file->alists fields
+                                                 csv-filepath
+                                                 nil
+                                                 :note note
+                                                 :org org)
+                       (re-type-fields ()
+                         (format t "Please input the correct fields, separated by space:~%")
+                         (let ((new-fields (mapcar #'intern
+                                                   (split-sequence #\Space
+                                                                   (string-upcase (read-line))))))
+                           (csv->vcf new-fields
+                                     csv-filepath
+                                     :note note
+                                     :org org))))))
         (loop for alist in records
            do (handler-bind ((no-pinyin-for-hanzi-error
                               #'use-manual-value))
