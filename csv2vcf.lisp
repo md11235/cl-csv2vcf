@@ -67,12 +67,12 @@
                 (if (> (length value) 0)
                     (case field
                       ((mobile work-fixed-line email) (push (cons field
-                                                             (split-sequence:split-sequence #\  value))
+                                                             (split-sequence #\Space value))
                                                         result))
                       (t (push (cons field value)
                                result)))))
             fields
-            (split-sequence:split-sequence #\, csv-line))
+            (split-sequence #\, csv-line))
     result))
 
 (defun parse-csv-file->alists (fields csv-filepath section-mark &key org note)
