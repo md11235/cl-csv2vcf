@@ -227,7 +227,7 @@
 ;; work-address
 ;; home-address
 ;; note
-(defun csv->vcf (fields csv-filepath &key note org)
+(defun csv->vcf (fields csv-filepath &key note org section-mark)
   (load-xing-pinyin-pairs)
   (let ((output-filepath (make-pathname :type "vcf"
                                         :defaults csv-filepath)))
@@ -245,7 +245,7 @@
                                          (invoke-restart 'abort))))
                        (parse-csv-file->alists fields
                                                csv-filepath
-                                               nil
+                                               section-mark
                                                :note note
                                                :org org))))
         (loop for alist in records
