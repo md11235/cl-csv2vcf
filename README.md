@@ -13,7 +13,9 @@ Prepare a CSV file
 
 say there is a CSV file at e:/tmp/test.csv whose content is like:
 
->王小明,13912345678,xiaoming.wang@example.com,贵州
+>王小明,13912345678 13366778899,xiaoming.wang@example.com,贵州
+
+Multiple phone numbers and email accounts separated by one space are supported.
 
 Convert CSV to VCF
 ------------------

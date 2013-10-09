@@ -67,12 +67,12 @@
                 (if (> (length value) 0)
                     (case field
                       ((mobile work-fixed-line email) (push (cons field
-                                                             (split-sequence:split-sequence #\  value))
+                                                             (split-sequence #\Space value))
                                                         result))
                       (t (push (cons field value)
                                result)))))
             fields
-            (split-sequence:split-sequence #\, csv-line))
+            (split-sequence #\, csv-line))
     result))
 
 (defun parse-csv-file->alists (fields csv-filepath section-mark &key org note)
@@ -216,6 +216,21 @@
           given-name
           pinyin)))
 
+;;
+
+(defun use-manual-value (c)
+    (declare (ignore c))
+    (let (family-name
+          given-name
+          pinyin)
+      (format t "Input Family Name:")
+      (setq family-name (read-line))
+      (format t "Input Given Name:")
+      (setq given-name (read-line))
+      (format t "Input Pinyin for Family Name:")
+      (setq pinyin (read-line))
+      (invoke-restart 'use-manual-value family-name given-name pinyin)))
+
 ;; the driver function
 ;; take /path/to/contacts.csv and output /path/to/contacts.vcf
 ;; supported fileds:
@@ -237,17 +252,34 @@
                             :if-exists :overwrite
                             :if-does-not-exist :create
                             )
-      (let ((records (handler-bind ((unsupported-field-error
-                                     #'(lambda (c)
-                                         (format t
-                                                 "Abort upon a unsupported field: ~A~%"
-                                                 (unsupported-field-error-name c))
-                                         (invoke-restart 'abort))))
-                       (parse-csv-file->alists fields
-                                               csv-filepath
-                                               section-mark
-                                               :note note
-                                               :org org))))
+      ;; (let ((records (handler-bind ((unsupported-field-error
+      ;;                                #'(lambda (c)
+      ;;                                    (format t
+      ;;                                            "Abort upon a unsupported field: ~A~%"
+      ;;                                            (unsupported-field-error-name c))
+      ;;                                    (invoke-restart 'abort))))
+      ;;                  (parse-csv-file->alists fields
+      ;;                                          csv-filepath
+      ;;                                          section-mark
+      ;;                                          :note note
+      ;;                                          :org org))))
+      (let ((records (restart-case
+                         (parse-csv-file->alists fields
+                                                 csv-filepath
+                                                 nil
+                                                 :note note
+                                                 :org org)
+                       (re-type-fields ()
+                         (format t "Please input the correct fields, separated by space:~%")
+                         (let ((new-fields (mapcar #'intern
+                                                   (split-sequence #\Space
+                                                                   (string-upcase (read-line))))))
+                           (csv->vcf new-fields
+                                     csv-filepath
+                                     :note note
+                                     :org org))))))
         (loop for alist in records
-           do (alist->vcf3.0-format alist output)))))
+           do (handler-bind ((no-pinyin-for-hanzi-error
+                              #'use-manual-value))
+                (alist->vcf3.0-format alist output))))))
   (dump-xing-pinyin-pairs))
