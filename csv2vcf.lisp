@@ -30,6 +30,8 @@
                                    email
                                    work-address
                                    home-address
+                                   fax
+                                   title
                                    note))
 
 (defvar *hanzi->pinyin-alist-filename* nil "Chinese family name to pinyin mapping file")
@@ -66,11 +68,13 @@
                            :name field))
                 (if (> (length value) 0)
                     (case field
-                      ((mobile work-fixed-line email) (push (cons field
-                                                             (split-sequence #\Space value))
-                                                        result))
-                      (t (push (cons field value)
-                               result)))))
+                      ((mobile work-fixed-line fax email)
+                       (push (cons field
+                                   (split-sequence #\Space value))
+                             result))
+                      (t
+                       (push (cons field value)
+                             result)))))
             fields
             (split-sequence #\, csv-line))
     result))
@@ -172,6 +176,11 @@
               (format out-stream "~%FN;CHARSET=UTF-8:~A" full-name))
             ;; todo: support English full names
             ))))
+
+  (let ((title (get-vcf-field-value 'title alist)))
+    (if (> (length title) 0)
+        (format out-stream "~%TITLE;CHARSET=UTF-8:~A" title))
+    )
   
   (let ((phone-numbers (get-vcf-field-value 'mobile alist)))
        (loop for number in phone-numbers
@@ -180,6 +189,10 @@
   (let ((phone-numbers (get-vcf-field-value 'work-fixed-line alist)))
        (loop for number in phone-numbers
           do (format out-stream "~%TEL;TYPE=WORK:~A" number)))
+
+  (let ((fax-numbers (get-vcf-field-value 'fax alist)))
+    (loop for number in fax-numbers
+          do (format out-stream "~%TEL;TYPE=FAX:~A" number)))
   
   (let ((org (get-vcf-field-value 'org alist)))
     (if (> (length org) 0)
