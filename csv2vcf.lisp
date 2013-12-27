@@ -76,7 +76,9 @@
                        (push (cons field value)
                              result)))))
             fields
-            (split-sequence #\, csv-line))
+            ;; (split-sequence #\, csv-line)
+            (cl-csv:read-csv-row csv-line)
+            )
     result))
 
 (defun parse-csv-file->alists (fields csv-filepath section-mark &key org note)

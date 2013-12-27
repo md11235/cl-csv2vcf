@@ -5,8 +5,11 @@
   :description "csv2vcf: convert contacts recorded in CSV file to VCard format file"
   :author "Sen Zhang <md11235@gmail.com>"
   :license "MIT"
-  :depends-on (#:split-sequence)
+  :depends-on (#:split-sequence
+               #:flexi-streams
+               #:cl-csv)
   :components ((:file "package")
+               (:file "util")
                (:file "csv2vcf")))
 
 ;;;; todo: add "export"
