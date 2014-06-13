@@ -1,7 +1,8 @@
 csv2vcf
 =======
 
-convert contacts info recorded in CSV file to VCard file.
+A Common Lisp program which converts contacts info recorded in CSV file to VCard file, 
+which then could be imported into iPhone, Android phones and Microsoft Outlook.
 
 Currently only Simplified Chinese Names are supported.
 
