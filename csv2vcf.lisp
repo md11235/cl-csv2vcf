@@ -58,11 +58,12 @@
 (defun xing->pinyin (hanzi)
   (gethash (intern hanzi) *hash-xing->pinyin*))
 
-(defun parse-csv-line->alist (fields csv-line &key note org)
+(defun parse-csv-row->alist (fields csv-row &key note org)
   (let ((result (list (cons 'org org)
                       (cons 'note note))))
     (mapcar #'(lambda (field value)
                 (setq field (intern (symbol-name field) :csv2vcf))
+                (setq value (cl-ppcre:regex-replace-all #\Newline value ""))
                 (or (member field *supported-vcard-fields*)
                     (error 'unsupported-field-error
                            :name field))
@@ -77,8 +78,7 @@
                              result)))))
             fields
             ;; (split-sequence #\, csv-line)
-            (cl-csv:read-csv-row csv-line)
-            )
+            csv-row)
     result))
 
 (defun parse-csv-file->alists (fields csv-filepath section-mark &key org note)
@@ -88,18 +88,18 @@
     (with-open-file (input-stream csv-filepath
                                   :direction :input
                                   :external-format :utf-8)
-      (loop for line = (read-line input-stream nil 'foo)
-         until (eq line 'foo)
+      (loop for csv-row in (cl-csv:read-csv input-stream)
          do (if (and section-mark
-                     (string-equal (subseq line 0 section-mark-length)
+                     (>= (length (nth 0 csv-row)) section-mark-length)
+                     (string-equal (subseq (nth 0 csv-row) 0 section-mark-length)
                                    section-mark))
-                (setq note-2 (string-right-trim ","
-                                                (subseq line section-mark-length)))
-                (push (parse-csv-line->alist fields
-                                             line
-                                             :note (or note-2
-                                                       note)
-                                             :org org)
+                ;; (break)
+                (setq note-2 (subseq (nth 0 csv-row) section-mark-length))
+                (push (parse-csv-row->alist fields
+                                            csv-row
+                                            :note (or note-2
+                                                      note)
+                                            :org org)
                       results))))
     (reverse results)))
 

@@ -7,6 +7,7 @@
   :license "MIT"
   :depends-on (#:split-sequence
                #:flexi-streams
+               #:cl-ppcre
                #:cl-csv)
   :components ((:file "package")
                (:file "util")
