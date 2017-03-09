@@ -30,6 +30,7 @@ Convert CSV to VCF
     (csv2vcf:csv->vcf '(full-name mobile email work-address) "e:/tmp/test.csv")
 
 + the output VCF is under the same directory with the CSV file.
++ and QRCode images(png) also resides in that directory.
 
 + supported fields
 
@@ -41,4 +42,5 @@ Convert CSV to VCF
     * email
     * work-address
     * home-address
+    * url
     * note
