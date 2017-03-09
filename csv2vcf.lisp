@@ -32,6 +32,7 @@
                                    home-address
                                    fax
                                    title
+                                   url
                                    note))
 
 (defvar *hanzi->pinyin-alist-filename* nil "Chinese family name to pinyin mapping file")
@@ -136,88 +137,92 @@
 
 ;; todo: move the xing->pinyin into parse-csv-line->alist
 ;; to separate logic from presentation.
-(defun alist->vcf3.0-format (alist out-stream)
+(defun alist->vcf3.0-format (alist)
   (format t "Processing: ~A~%" (get-vcf-field-value 'full-name alist))
   
-  (format out-stream
-          "BEGIN:VCARD~%VERSION:3.0")
-  (let ((full-name (get-vcf-field-value 'full-name alist)))
-    (let ((family-name-2 (subseq full-name 0 2))
-          (family-name-1 (subseq full-name 0 1)))
-      (let ((code (char-code (char family-name-1 0)
-                             ;; (coerce family-name-1
-                             ;;         'character)
-                             )))
-        (if (> code 255)
-            (let ((pinyin-2 (xing->pinyin family-name-2))
-                  (pinyin-1 (xing->pinyin family-name-1)))
-              (restart-case
-                  (progn
-                    (if pinyin-2
-                        (format out-stream
-                                "~%N;CHARSET=UTF-8:~A;~A;;;"
-                                family-name-2
-                                (subseq full-name 2))
-                        (if pinyin-1
-                            (format out-stream
-                                    "~%N;CHARSET=UTF-8:~A;~A;;;"
-                                    family-name-1
-                                    (subseq full-name 1))
-                            (error 'no-pinyin-for-hanzi-error
-                                   :hanzi (list family-name-1 family-name-2))))
-                    (format out-stream "~%X-PHONETIC-LAST-NAME:~A" (string-upcase (or pinyin-2 pinyin-1))))
-                (use-manual-value (family-name given-name pinyin)
-                  :interactive read-manual-value
-                  (format out-stream
-                            "~%N;CHARSET=UTF-8:~A;~A;;;"
-                            family-name
-                            given-name)
-                  (format out-stream "~%X-PHONETIC-LAST-NAME:~A" (string-upcase pinyin))
-                  (add-xing-pinyin-pair family-name pinyin)))
+  (with-output-to-string (out-stream)
+    (format out-stream "BEGIN:VCARD~%VERSION:3.0")
+   (let ((full-name (get-vcf-field-value 'full-name alist)))
+     (let ((family-name-2 (subseq full-name 0 2))
+           (family-name-1 (subseq full-name 0 1)))
+       (let ((code (char-code (char family-name-1 0)
+                              ;; (coerce family-name-1
+                              ;;         'character)
+                              )))
+         (if (> code 255)
+             (let ((pinyin-2 (xing->pinyin family-name-2))
+                   (pinyin-1 (xing->pinyin family-name-1)))
+               (restart-case
+                   (progn
+                     (if pinyin-2
+                         (format out-stream
+                                 "~%N;CHARSET=UTF-8:~A;~A;;;"
+                                 family-name-2
+                                 (subseq full-name 2))
+                         (if pinyin-1
+                             (format out-stream
+                                     "~%N;CHARSET=UTF-8:~A;~A;;;"
+                                     family-name-1
+                                     (subseq full-name 1))
+                             (error 'no-pinyin-for-hanzi-error
+                                    :hanzi (list family-name-1 family-name-2))))
+                     (format out-stream "~%X-PHONETIC-LAST-NAME:~A" (string-upcase (or pinyin-2 pinyin-1))))
+                 (use-manual-value (family-name given-name pinyin)
+                   :interactive read-manual-value
+                   (format out-stream
+                           "~%N;CHARSET=UTF-8:~A;~A;;;"
+                           family-name
+                           given-name)
+                   (format out-stream "~%X-PHONETIC-LAST-NAME:~A" (string-upcase pinyin))
+                   (add-xing-pinyin-pair family-name pinyin)))
               
-              (format out-stream "~%FN;CHARSET=UTF-8:~A" full-name))
-            ;; todo: support English full names
-            ))))
+               (format out-stream "~%FN;CHARSET=UTF-8:~A" full-name))
+             ;; todo: support English full names
+             ))))
 
-  (let ((title (get-vcf-field-value 'title alist)))
-    (if (> (length title) 0)
-        (format out-stream "~%TITLE;CHARSET=UTF-8:~A" title))
-    )
+   (let ((title (get-vcf-field-value 'title alist)))
+     (if (> (length title) 0)
+         (format out-stream "~%TITLE;CHARSET=UTF-8:~A" title))
+     )
   
-  (let ((phone-numbers (get-vcf-field-value 'mobile alist)))
-       (loop for number in phone-numbers
-          do (format out-stream "~%TEL;TYPE=CELL:~A" number)))
+   (let ((phone-numbers (get-vcf-field-value 'mobile alist)))
+     (loop for number in phone-numbers
+        do (format out-stream "~%TEL;TYPE=CELL:~A" number)))
 
-  (let ((phone-numbers (get-vcf-field-value 'work-fixed-line alist)))
-       (loop for number in phone-numbers
-          do (format out-stream "~%TEL;TYPE=WORK:~A" number)))
+   (let ((phone-numbers (get-vcf-field-value 'work-fixed-line alist)))
+     (loop for number in phone-numbers
+        do (format out-stream "~%TEL;TYPE=WORK:~A" number)))
 
-  (let ((fax-numbers (get-vcf-field-value 'fax alist)))
-    (loop for number in fax-numbers
-          do (format out-stream "~%TEL;TYPE=FAX:~A" number)))
+   (let ((fax-numbers (get-vcf-field-value 'fax alist)))
+     (loop for number in fax-numbers
+        do (format out-stream "~%TEL;TYPE=FAX:~A" number)))
   
-  (let ((org (get-vcf-field-value 'org alist)))
-    (if (> (length org) 0)
-        (format out-stream "~%ORG;CHARSET=UTF-8:~A" org)))
+   (let ((org (get-vcf-field-value 'org alist)))
+     (if (> (length org) 0)
+         (format out-stream "~%ORG;CHARSET=UTF-8:~A" org)))
   
-  (let ((emails (get-vcf-field-value 'email
-                                     alist)))
-    (loop for email in emails
-       do (format out-stream
-                  "~%item1.EMAIL;TYPE=pref;TYPE=INTERNET:~A~%item1.X-ABLABEL:email"
-                  email)))
-  (let ((address (get-vcf-field-value 'work-address alist)))
-    (if (> (length address) 0)
-        (format out-stream "~%ADR;TYPE=WORK;CHARSET=UTF-8:;;~A" address)))
+   (let ((emails (get-vcf-field-value 'email
+                                      alist)))
+     (loop for email in emails
+        do (format out-stream
+                   "~%item1.EMAIL;TYPE=pref;TYPE=INTERNET:~A~%item1.X-ABLABEL:email"
+                   email)))
+   (let ((address (get-vcf-field-value 'work-address alist)))
+     (if (> (length address) 0)
+         (format out-stream "~%ADR;TYPE=WORK;CHARSET=UTF-8:;;~A" address)))
 
-  (let ((address (get-vcf-field-value 'home-address alist)))
-    (if (> (length address) 0)
-        (format out-stream "~%ADR;TYPE=HOME;CHARSET=UTF-8:;;~A" address)))
+   (let ((address (get-vcf-field-value 'home-address alist)))
+     (if (> (length address) 0)
+         (format out-stream "~%ADR;TYPE=HOME;CHARSET=UTF-8:;;~A" address)))
+
+   (let ((url (get-vcf-field-value 'url alist)))
+     (if (> (length url) 0)
+         (format out-stream "~%URL:~A" url)))
   
-  (let ((note (get-vcf-field-value 'note alist)))
-    (if note
-        (format out-stream "~%NOTE;CHARSET=UTF-8:~A" note)))
-  (format out-stream "~%END:VCARD~%~%"))
+   (let ((note (get-vcf-field-value 'note alist)))
+     (if note
+         (format out-stream "~%NOTE;CHARSET=UTF-8:~A" note)))
+   (format out-stream "~%END:VCARD")))
 
 
 (defun alist->vcf3.0-format-qprint (alist out-stream)
@@ -343,7 +348,7 @@
 ;; work-address
 ;; home-address
 ;; note
-(defun csv->vcf (fields csv-filepath &key note org section-mark use-quoted-printable)
+(defun csv->vcf (fields csv-filepath &key note org section-mark use-quoted-printable (gen-qr t))
   (load-xing-pinyin-pairs)
   (let ((output-filepath (make-pathname :type "vcf"
                                         :defaults csv-filepath)))
@@ -382,7 +387,26 @@
         (loop for alist in records
            do (handler-bind ((no-pinyin-for-hanzi-error
                               #'use-manual-value))
-                (if use-quoted-printable
-                    (alist->vcf3.0-format-qprint alist output)
-                    (alist->vcf3.0-format alist output)))))))
+                (let ((vcf-string (if use-quoted-printable
+                                      (alist->vcf3.0-format-qprint alist output)
+                                      (alist->vcf3.0-format alist)))
+                      (qr-png-filepath (make-pathname :type "png"
+                                                      :name (get-vcf-field-value 'full-name alist)
+                                                      :defaults csv-filepath)))
+                  (format t "~A~%" vcf-string)
+                  (format output "~A~%~%" vcf-string)
+                  (if gen-qr
+                      (cl-qrencode:encode-png-bytes
+                       (map 'list
+                            #'identity
+                            (flexi-streams:string-to-octets
+                             vcf-string
+                             :external-format :utf-8))
+                       :fpath qr-png-filepath
+                       :pixsize 3
+                       :level :level-l))))))))
+  
   (dump-xing-pinyin-pairs))
+
+
+

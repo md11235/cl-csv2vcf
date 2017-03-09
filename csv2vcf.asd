@@ -8,7 +8,8 @@
   :depends-on (#:split-sequence
                #:flexi-streams
                #:cl-ppcre
-               #:cl-csv)
+               #:cl-csv
+               #:cl-qrencode)
   :components ((:file "package")
                (:file "util")
                (:file "csv2vcf")))
